@@ -5,7 +5,7 @@ import tkinter.ttk as ttk
 
 import numpy as np
 
-from trasporte import Transporte
+from transporte import Transporte
 
 
 class App:
