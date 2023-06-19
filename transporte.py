@@ -1,18 +1,17 @@
 from collections import deque
+import tkinter
 import numpy as np
 from networkx import DiGraph, find_cycle
 import copy
 
 
 class Transporte:
-    def __init__(
-        self, custos: list[list[float]], oferta: list[float], demanda: list[float]
-    ):
+    def __init__(self, custos, oferta, demanda):
         self.custos = copy.deepcopy(custos)
         self.oferta = oferta[:]
         self.demanda = demanda[:]
 
-        dif_oferta_demanda = sum(self.oferta) - sum(self.demanda)
+        dif_oferta_demanda = int(np.nansum(self.oferta) - np.nansum(self.demanda))
 
         if dif_oferta_demanda < 0:
             self.oferta.append(abs(dif_oferta_demanda))
@@ -21,6 +20,16 @@ class Transporte:
             self.demanda.append(abs(dif_oferta_demanda))
             for linha in self.custos:
                 linha.append(0)
+
+        if np.nan in self.oferta or np.nan in self.demanda:
+            soma = int(np.nansum(self.oferta))
+            for i in range(len(self.oferta)):
+                if np.isnan(self.oferta[i]):
+                    self.oferta[i] = soma
+
+            for i in range(len(self.demanda)):
+                if np.isnan(self.demanda[i]):
+                    self.demanda[i] = soma
 
     def canto_noroeste(self):
         bfs = [
@@ -272,7 +281,7 @@ def get_input(prompt):
             print("Entrada inválida. Tente novamente.")
 
 
-def main():
+def test():
     print("Programa de Resolução do Problema do Transporte")
 
     t = Transporte(
@@ -299,7 +308,7 @@ def main():
                 custo = t.obter_otimo(sbf)
                 print(sbf)
                 print(custo)
-                # menu = 2
+
             elif choice == 2:
                 sbf, custo = t.minimo_dos_custos()
                 print(sbf)
@@ -307,7 +316,7 @@ def main():
                 custo = t.obter_otimo(sbf)
                 print(sbf)
                 print(custo)
-                # menu = 2
+
             elif choice == 3:
                 sbf, custo = t.vogel()
                 print(sbf)
@@ -315,13 +324,8 @@ def main():
                 custo = t.obter_otimo(sbf)
                 print(sbf)
                 print(custo)
-            #     menu = 2
             elif choice == 0:
                 print("Programa encerrado.")
                 break
             else:
                 print("Opção inválida. Tente novamente.")
-
-
-if __name__ == "__main__":
-    main()

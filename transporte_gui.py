@@ -41,6 +41,7 @@ class App:
         self.ofertas_entries = []
         self.demandas_frame = None
         self.demandas_entries = []
+        self.com_transbordo = False
         self.enviar_bt = None
         self.spinbox_frame = None
         self.left_frame_config()
@@ -91,6 +92,10 @@ class App:
         self.definir_bt.configure(text="Definir", width=15)
         self.definir_bt.pack(pady=5, side="top")
 
+    def mudar_transbordo(self):
+        self.com_transbordo = not self.com_transbordo
+        print(self.com_transbordo)
+
     def dados_frame_config(self):
         self.dados_frame = ttk.Labelframe(self.left)
         self.dados_frame.configure(height=200, text="Inserir Dados", width=200)
@@ -104,9 +109,19 @@ class App:
 
         self.gerar_entries()
 
+        self.transbordo_check = ttk.Checkbutton(
+            self.dados_frame,
+            text="Com transbordo?",
+            variable=self.com_transbordo,
+            onvalue=True,
+            offvalue=False,
+            command=self.mudar_transbordo,
+        )
+        self.transbordo_check.grid(row=2, column=0, padx=5, pady=5)
+
         dados_bt_frame = ttk.Frame(self.dados_frame)
         dados_bt_frame.configure(height=200, width=200)
-        dados_bt_frame.grid(column=0, columnspan=2, padx=5, pady=5, row=2)
+        dados_bt_frame.grid(column=0, columnspan=2, padx=5, pady=5, row=3)
 
         self.enviar_bt = ttk.Button(dados_bt_frame, command=self.ler_entries)
         self.enviar_bt.configure(text="Definir", width=15)
@@ -198,10 +213,18 @@ class App:
             custos.append(tmp)
 
         for i in range(self.n):
-            ofertas.append(int(self.ofertas_entries[i].get()))
+            entry_value = self.ofertas_entries[i].get()
+            if self.com_transbordo == True:
+                ofertas.append(np.nan if entry_value == "" else int(entry_value))
+            else:
+                ofertas.append(int(self.ofertas_entries[i].get()))
 
         for j in range(self.m):
-            demandas.append(int(self.demandas_entries[j].get()))
+            entry_value = self.demandas_entries[j].get()
+            if self.com_transbordo == True:
+                demandas.append(np.nan if entry_value == "" else int(entry_value))
+            else:
+                demandas.append(int(self.demandas_entries[j].get()))
 
         self.t = Transporte(custos, ofertas, demandas)
 
@@ -262,8 +285,8 @@ class App:
             self.tmp_label.grid(row=0, column=0, sticky="nesw")
             return
 
-        for i in range(self.n):
-            for j in range(self.m):
+        for i in range(len(self.sbf)):
+            for j in range(len(self.sbf[0])):
                 tmp = tk.Label(
                     self.sbf_frame,
                     text="0" if np.isnan(self.sbf[i][j]) else str(self.sbf[i][j]),
@@ -282,24 +305,18 @@ class App:
             return
 
         self.sbf, self.custo_total = self.t.canto_noroeste()
-        self.n = len(self.sbf)
-        self.m = len(self.sbf[0])
         self.clear_right_side()
 
     def minimo_custo(self):
         if self.t == None:
             return
         self.sbf, self.custo_total = self.t.minimo_dos_custos()
-        self.n = len(self.sbf)
-        self.m = len(self.sbf[0])
         self.clear_right_side()
 
     def vogel(self):
         if self.t == None:
             return
         self.sbf, self.custo_total = self.t.vogel()
-        self.n = len(self.sbf)
-        self.m = len(self.sbf[0])
         self.clear_right_side()
 
     def otimizar(self):
